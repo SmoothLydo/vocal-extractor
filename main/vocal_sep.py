@@ -103,6 +103,8 @@ def main():
 
     print(f"Log mel Spectrogram information saved in {OUTPUT_DIR}")
 
+    return full_vocal_spec
+
 
 
 if __name__ == "__main__":
