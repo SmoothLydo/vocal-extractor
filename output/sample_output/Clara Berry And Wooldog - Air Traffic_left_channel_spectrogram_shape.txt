@@ -1,2 +1,1 @@
-Frequency Bins: 16
-Time Frames: 15516
+(16,15516)

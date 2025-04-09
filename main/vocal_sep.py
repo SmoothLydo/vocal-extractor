@@ -107,7 +107,7 @@ def main():
     # Save the shape of the spectrogram
     shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_left_channel_spectrogram_shape.txt")
     with open(shape_path, "w") as f:
-        f.write(f"Frequency Bins: {flattened_left_spec.shape[0]}\nTime Frames: {flattened_left_spec.shape[1]}")
+        f.write(f"({flattened_left_spec.shape[0]},{flattened_left_spec.shape[1]})")
 
     # Save the plot (optionally, plot the compressed version instead)
     #save_spec_plot(OUTPUT_DIR, song_title, compressed_left_spec)  # Change left_spec to compressed_left_spec if you want to plot the compressed version
