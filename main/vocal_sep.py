@@ -98,7 +98,7 @@ def main():
     compressed_left_spec = left_spec.reshape(16, 16, -1).mean(axis=1)  # shape: (16, time_frames)
 
     # Flatten the spectrogram for saving
-    flattened_left_spec = compressed_left_spec.reshape(16, -1)  # shape: (16, time_frames)
+    flattened_left_spec = compressed_left_spec.reshape(16, -1).T  # shape: (16, time_frames)
 
     # Save raw binary data
     raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_left_channel_spectrogram.raw")
