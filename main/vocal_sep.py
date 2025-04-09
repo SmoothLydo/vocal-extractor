@@ -92,14 +92,18 @@ def main():
         print(f"Chunk {i+1}/{chunks} Completed")
 
     full_vocal_spec = np.concatenate(all_spec_chunks, axis=2)  # shape: (2, 256, time_frames)
-    flattened_spec = full_vocal_spec.reshape(2 * 256, -1)  # shape: (512, time_frames)
 
-    # Save raw binary and shape for Godot
-    raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_stereo.raw")
-    shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_shape.txt")
+    # Compress frequency bins from 256 to 32
+    compressed_spec = full_vocal_spec.reshape(2, 32, 8, -1).mean(axis=2)
+
+    # Flatten for saving
+    flattened_spec = compressed_spec.reshape(2 * 32, -1)  # shape: (64, time_frames)
+
+    # Save raw + shape
+    raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_stereo_32.raw")
+    shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_shape_32.txt")
 
     flattened_spec.astype(np.float32).tofile(raw_path)
-
     with open(shape_path, "w") as f:
         f.write(f"{flattened_spec.shape[0]} {flattened_spec.shape[1]}")
 
