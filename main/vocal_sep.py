@@ -91,19 +91,19 @@ def main():
         all_spec_chunks.append(log_mel_spec_chunk)
         print(f"Chunk {i+1}/{chunks} Completed")
 
-    # Concatenate all predicted spectrograms along time axis
-    full_vocal_spec = np.concatenate(all_spec_chunks, axis=2)  # shape: (2, 256, total_time_frames)
+    full_vocal_spec = np.concatenate(all_spec_chunks, axis=2)  # shape: (2, 256, time_frames)
+    flattened_spec = full_vocal_spec.reshape(2 * 256, -1)  # shape: (512, time_frames)
 
-    # Save spectrogram np array
-    numpy_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_stereo.npy")
-    np.save(numpy_path, full_vocal_spec)
+    # Save raw binary and shape for Godot
+    raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_stereo.raw")
+    shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_shape.txt")
 
-    # Save images of the left and right vocal channels
-    save_spec_plot(OUTPUT_DIR, song_title, full_vocal_spec)
+    flattened_spec.astype(np.float32).tofile(raw_path)
 
-    print(f"Log mel Spectrogram information saved in {OUTPUT_DIR}")
+    with open(shape_path, "w") as f:
+        f.write(f"{flattened_spec.shape[0]} {flattened_spec.shape[1]}")
 
-    return full_vocal_spec
+    print(f"Spectrogram raw data and shape saved to {OUTPUT_DIR}")
 
 
 
