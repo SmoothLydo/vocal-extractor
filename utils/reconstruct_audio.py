@@ -17,24 +17,21 @@ def unnormalize_spectrograms(norm_spec, left_min, left_max, right_min, right_max
 
 
 
-def save_spec_plot(output_dir, song_title, full_vocal_spec):
+def save_spec_plot(output_dir, song_title, left_spec, sr=44100, hop_length=512):
     # Separate left and right channels
-    left_spec = full_vocal_spec[0]
-    right_spec = full_vocal_spec[1]
+
+    # Create fake mel bin frequencies (since you averaged them)
+    # This lets us still show y_axis='mel' without an error
+    mel_bins = 32
+    mel_frequencies = librosa.mel_frequencies(n_mels=mel_bins, fmin=0, fmax=sr // 2)
 
     # Plot and save the mel spectrogram images
     plt.figure(figsize=(12, 6))
-    librosa.display.specshow(left_spec, sr=44100, hop_length=512, y_axis='mel', x_axis='time')
-    plt.title("Predicted Vocal Log Mel Spectrogram (Left Channel)")
+    librosa.display.specshow(left_spec, sr=sr, hop_length=hop_length, x_axis='time',
+                              y_axis=None, cmap='magma', fmin=0, fmax=sr // 2)
+    plt.yticks(ticks=np.linspace(0, 31, 6), labels=[f"{int(f)}Hz" for f in np.linspace(0, sr//2, 6)])
+    plt.title("Predicted Vocal Log Mel Spectrogram (Left Channel, 32 bins)")
     plt.colorbar(format="%+2.0f dB")
     plt.tight_layout()
     plt.savefig(os.path.join(output_dir, f"{song_title}_vocal_spec_left.png"))
-    plt.close()
-
-    plt.figure(figsize=(12, 6))
-    librosa.display.specshow(right_spec, sr=44100, hop_length=512, y_axis='mel', x_axis='time')
-    plt.title("Predicted Vocal Log Mel Spectrogram (Right Channel)")
-    plt.colorbar(format="%+2.0f dB")
-    plt.tight_layout()
-    plt.savefig(os.path.join(output_dir, f"{song_title}_vocal_spec_right.png"))
     plt.close()

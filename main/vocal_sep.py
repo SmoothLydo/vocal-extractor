@@ -82,32 +82,39 @@ def main():
 
         # Inference
         with torch.no_grad():
-            predicted_vocals = model(input_tensor)
-            predicted_vocals_np = predicted_vocals[0].detach().cpu().numpy().astype(np.float32)
-
-        log_mel_spec_chunk = unnormalize_spectrograms(predicted_vocals_np, left_minmax[0], left_minmax[1], right_minmax[0], right_minmax[1])
+            predicted_vocals_chunk = model(input_tensor)
+            predicted_vocals_chunk_np = predicted_vocals_chunk[0].detach().cpu().numpy().astype(np.float32)
 
         # Append the reconstructed audio to the list of chunks
-        all_spec_chunks.append(log_mel_spec_chunk)
+        all_spec_chunks.append(predicted_vocals_chunk_np)
         print(f"Chunk {i+1}/{chunks} Completed")
 
     full_vocal_spec = np.concatenate(all_spec_chunks, axis=2)  # shape: (2, 256, time_frames)
 
-    # Compress frequency bins from 256 to 32
-    compressed_spec = full_vocal_spec.reshape(2, 32, 8, -1).mean(axis=2)
+    # Get the left channel spectrogram (shape: (256, time_frames))
+    left_spec = full_vocal_spec[0]  # First channel is the left channel
 
-    # Flatten for saving
-    flattened_spec = compressed_spec.reshape(2 * 32, -1)  # shape: (64, time_frames)
+    # Compress frequency bins from 256 to 16
+    compressed_left_spec = left_spec.reshape(16, 16, -1).mean(axis=1)  # shape: (16, time_frames)
 
-    # Save raw + shape
-    raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_stereo_32.raw")
-    shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_vocal_spectrogram_shape_32.txt")
+    # Flatten the spectrogram for saving
+    flattened_left_spec = compressed_left_spec.reshape(16, -1)  # shape: (16, time_frames)
 
-    flattened_spec.astype(np.float32).tofile(raw_path)
+    # Save raw binary data
+    raw_path = os.path.join(OUTPUT_DIR, f"{song_title}_left_channel_spectrogram.raw")
+    flattened_left_spec.astype(np.float32).tofile(raw_path)
+
+    # Save the shape of the spectrogram
+    shape_path = os.path.join(OUTPUT_DIR, f"{song_title}_left_channel_spectrogram_shape.txt")
     with open(shape_path, "w") as f:
-        f.write(f"{flattened_spec.shape[0]} {flattened_spec.shape[1]}")
+        f.write(f"Frequency Bins: {flattened_left_spec.shape[0]}\nTime Frames: {flattened_left_spec.shape[1]}")
 
-    print(f"Spectrogram raw data and shape saved to {OUTPUT_DIR}")
+    # Save the plot (optionally, plot the compressed version instead)
+    #save_spec_plot(OUTPUT_DIR, song_title, compressed_left_spec)  # Change left_spec to compressed_left_spec if you want to plot the compressed version
+
+    print(f"Left channel spectrogram raw data and shape saved to {OUTPUT_DIR}")
+
+
 
 
 
